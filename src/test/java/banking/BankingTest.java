@@ -63,6 +63,50 @@ public class BankingTest {
 		assertEquals("Balance incorrecte !", before0 - amount, myDAO.balanceForCustomer(fromCustomer), 0.001f);
 		assertEquals("Balance incorrecte !", before1 + amount, myDAO.balanceForCustomer(toCustomer), 0.001f);				
 	}
+        
+        @Test
+        public void notEnoughMoneyForTransfer() throws Exception {
+            float amount = 150.0f; //supérieur à l'argent dont dispose le client 0
+            int fromCustomer = 0; // Le client 0 dispose de 100€ dans le jeu de tests
+            int toCustomer = 1;
+            float before0 = myDAO.balanceForCustomer(fromCustomer);
+            float before1 = myDAO.balanceForCustomer(toCustomer);
+            
+            // On exécute la transaction, qui doit échouer
+            try{
+                myDAO.bankTransferTransaction(fromCustomer, toCustomer, amount);
+            }catch(Exception e){
+                //On vérifie que on renvoie bien une erreur SQL
+                assertEquals("L'opération interdite ne retourne pas une SQLException",e.getClass(), SQLException.class);
+            }
+            finally{
+                // on vérifie que les balances restent inchangées.
+                assertEquals("La balance du client 0 a été modifiée", before0, myDAO.balanceForCustomer(fromCustomer), 0.001f);
+		assertEquals("La balance du client 1 a été modifiée", before1, myDAO.balanceForCustomer(toCustomer), 0.001f);
+            }
+        }
+        
+        @Test
+        public void transferWithUnexistingCustomer() throws Exception{
+            float amount = 10.0f;
+            int fromCustomer = 0; // Le client 0 dispose de 100€ dans le jeu de tests
+            int toCustomer = 2;
+            float before0 = myDAO.balanceForCustomer(fromCustomer);
+            float before1 = myDAO.balanceForCustomer(toCustomer);
+            
+            // On exécute la transaction, qui doit échouer
+            try{
+                myDAO.bankTransferTransaction(fromCustomer, toCustomer, amount);
+            }catch(Exception e){
+                //On vérifie que on renvoie bien une erreur SQL
+                assertEquals("L'opération interdite ne retourne pas une SQLException",e.getClass(), SQLException.class);
+            }
+            finally{
+                // on vérifie que les balances restent inchangées.
+                assertEquals("La balance du client 0 a été modifiée", before0, myDAO.balanceForCustomer(fromCustomer), 0.001f);
+		assertEquals("La balance du client 1 a été modifiée", before1, myDAO.balanceForCustomer(toCustomer), 0.001f);
+            }
+        }
 	
 
 	public static DataSource getDataSource() throws SQLException {
